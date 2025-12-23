@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>抖音评论制作 - 最终参考版</title>
+    <title>抖音评论生成器 - 终极完全体</title>
     <style>
         :root {
             --douyin-bg: #ffffff;
@@ -11,9 +11,9 @@
             --douyin-line: #f2f2f2;
             --douyin-red: #ff2c55;
             --douyin-heart-gray: #94959a;
+            --primary-blue: #007bff;
         }
 
-        /* 夜间模式颜色覆盖 */
         .dark-theme {
             --douyin-bg: #161722;
             --douyin-text: #ffffff;
@@ -24,112 +24,106 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f4f5f7;
             display: flex;
             justify-content: center;
-            padding: 40px 20px;
+            padding: 30px 20px;
             margin: 0;
         }
 
-        .container { display: flex; gap: 30px; max-width: 1000px; width: 100%; }
+        .container { display: flex; gap: 20px; max-width: 1100px; width: 100%; }
 
         /* 左侧控制台 */
         .controls {
-            flex: 1; background: white; padding: 25px; border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); height: fit-content;
+            flex: 1; background: white; padding: 20px; border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-height: 95vh; overflow-y: auto;
         }
-        h2 { font-size: 18px; margin: 0 0 20px; color: #333; }
-        .section-title { font-size: 13px; color: #999; margin: 15px 0 10px; font-weight: bold; }
+        h2 { font-size: 18px; margin: 0 0 15px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .section-title { font-size: 12px; color: #999; margin: 15px 0 8px; font-weight: bold; }
 
-        .btn-group { display: flex; background: #f0f0f0; padding: 4px; border-radius: 10px; margin-bottom: 20px; }
-        .btn-group div { flex: 1; text-align: center; padding: 8px; cursor: pointer; font-size: 13px; border-radius: 7px; transition: 0.2s; }
-        .btn-group .active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-weight: bold; }
+        /* 选项组按钮 */
+        .btn-group { display: flex; background: #f0f0f0; padding: 3px; border-radius: 8px; margin-bottom: 15px; }
+        .btn-group div { flex: 1; text-align: center; padding: 7px; cursor: pointer; font-size: 12px; border-radius: 6px; }
+        .btn-group .active { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-weight: bold; }
 
-        .input-group { margin-bottom: 12px; }
-        .input-group label { display: block; margin-bottom: 5px; font-size: 12px; color: #666; }
+        /* 头像网格 - 找回来了！ */
+        .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; background: #f9f9f9; padding: 10px; border-radius: 10px; margin-bottom: 15px; }
+        .avatar-item { width: 100%; aspect-ratio: 1/1; border-radius: 50%; cursor: pointer; border: 2px solid transparent; object-fit: cover; transition: 0.2s; }
+        .avatar-item:hover { transform: scale(1.1); }
+        .avatar-item.selected { border-color: var(--douyin-red); transform: scale(1.1); }
+
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; margin-bottom: 4px; font-size: 12px; color: #666; }
         .input-group input, .input-group textarea {
-            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none;
+            width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; outline: none; font-size: 13px;
         }
 
         /* 右侧预览区 */
-        .preview-wrapper { width: 450px; position: sticky; top: 40px; }
+        .preview-wrapper { width: 450px; position: sticky; top: 30px; }
         .preview-container {
             background-color: var(--douyin-bg); color: var(--douyin-text);
-            padding: 20px 0; border-radius: 4px; transition: 0.3s;
+            padding: 20px 0; border-radius: 8px; transition: 0.3s;
         }
 
-        /* 评论核心布局 */
-        .comment-item {
-            padding: 10px 16px;
-            display: flex;
-            align-items: flex-start;
-        }
-
-        /* 头像 */
+        .comment-item { padding: 10px 16px; display: flex; align-items: flex-start; }
         .avatar-box { width: 36px; height: 36px; border-radius: 50%; background: #eee; margin-right: 12px; flex-shrink: 0; overflow: hidden; }
         .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 中间内容 */
         .content-box { flex: 1; margin-right: 10px; }
         .nickname { font-size: 13px; color: var(--douyin-gray); margin-bottom: 4px; }
-        .comment-text { font-size: 15px; line-height: 1.5; margin-bottom: 6px; font-weight: 400; }
-        
-        .meta-info { font-size: 13px; color: var(--douyin-gray); display: flex; gap: 12px; align-items: center; }
-        
+        .comment-text { font-size: 15px; line-height: 1.5; margin-bottom: 6px; }
+        .meta-info { font-size: 13px; color: var(--douyin-gray); display: flex; gap: 10px; }
+
         /* 展开回复 */
-        .expand-replies {
-            margin-top: 10px; display: flex; align-items: center; 
-            font-size: 13px; color: var(--douyin-gray); font-weight: 500;
-        }
+        .expand-replies { margin-top: 10px; display: flex; align-items: center; font-size: 13px; color: var(--douyin-gray); font-weight: 500; }
         .line { width: 20px; height: 1px; background: var(--douyin-gray); opacity: 0.3; margin-right: 8px; }
 
-        /* 右侧点赞区 - 按照实拍图横向排列 */
-        .action-box { display: flex; align-items: center; gap: 15px; margin-top: 25px; }
-        
-        /* 点赞组 (心 + 数字) */
+        /* 右侧操作区 - 完美对齐版 */
+        .action-box { display: flex; align-items: center; gap: 12px; margin-top: 25px; }
         .like-group { display: flex; align-items: center; gap: 4px; cursor: pointer; }
-        .icon-heart { width: 20px; height: 20px; fill: var(--douyin-heart-gray); }
+        .icon-heart { width: 20px; height: 20px; fill: var(--douyin-heart-gray); transition: fill 0.2s; }
         .like-count { font-size: 13px; color: var(--douyin-gray); font-weight: 500; }
         
-        /* 点赞激活颜色 */
         .is-liked .icon-heart { fill: var(--douyin-red) !important; }
         .is-liked .like-count { color: var(--douyin-red) !important; }
 
-        /* 破碎的心 (空心灰色) */
         .broken-heart { width: 20px; height: 20px; fill: none; stroke: var(--douyin-heart-gray); stroke-width: 1.5; cursor: pointer; }
-
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="controls">
-        <h2>自定义评论设置</h2>
+        <h2>抖音评论制作 - 完全体</h2>
         
-        <div class="section-title">白天/夜间</div>
-        <div class="btn-group" id="themeGroup">
-            <div class="active" onclick="changeTheme('light')">☀️ 白天</div>
-            <div onclick="changeTheme('dark')">🌙 夜间</div>
+        <div class="section-title">主题与点赞</div>
+        <div style="display: flex; gap: 10px;">
+            <div class="btn-group" id="themeGroup" style="flex: 1;">
+                <div class="active" onclick="changeTheme('light')">☀️ 白天</div>
+                <div onclick="changeTheme('dark')">🌙 夜间</div>
+            </div>
+            <div class="btn-group" id="likeGroup" style="flex: 1;">
+                <div class="active" onclick="toggleLike(false)">默认灰</div>
+                <div onclick="toggleLike(true)">已点红</div>
+            </div>
         </div>
 
-        <div class="section-title">点赞状态</div>
-        <div class="btn-group" id="likeGroup">
-            <div class="active" onclick="toggleLike(false)">默认灰色</div>
-            <div onclick="toggleLike(true)">已点赞(红)</div>
-        </div>
+        <!-- 找回来的头像库 -->
+        <div class="section-title">点击更换头像</div>
+        <div class="avatar-grid" id="avGrid"></div>
 
-        <div class="section-title">文字内容</div>
-        <div class="input-group"><label>昵称</label><input type="text" id="inNick" value="生活频道"></div>
+        <div class="section-title">内容同步</div>
+        <div class="input-group"><label>昵称</label><input type="text" id="inNick" value="半夜的小猫"></div>
         <div class="input-group"><label>评论内容</label><textarea id="inContent" rows="3">半夜笑出鹅叫的小说</textarea></div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div class="input-group"><label>时间</label><input type="text" id="inTime" value="9小时前"></div>
+            <div class="input-group"><label>发布时间</label><input type="text" id="inTime" value="9小时前"></div>
             <div class="input-group"><label>IP 属地</label><input type="text" id="inIP" value="新疆"></div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div class="input-group"><label>获赞数</label><input type="text" id="inLikes" value="2.4w"></div>
-            <div class="input-group"><label>回复数</label><input type="text" id="inReplies" value="7634"></div>
+            <div class="input-group"><label>获赞数量</label><input type="text" id="inLikes" value="2.4w"></div>
+            <div class="input-group"><label>回复数量</label><input type="text" id="inReplies" value="7634"></div>
         </div>
     </div>
 
@@ -137,12 +131,8 @@
     <div class="preview-wrapper">
         <div class="preview-container" id="previewBox">
             <div class="comment-item">
-                <!-- 左：头像 -->
-                <div class="avatar-box">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=8" alt="avatar">
-                </div>
+                <div class="avatar-box"><img src="" id="pAvatar"></div>
                 
-                <!-- 中：内容 -->
                 <div class="content-box">
                     <div class="nickname" id="pNick">昵称</div>
                     <div class="comment-text" id="pContent">内容</div>
@@ -152,37 +142,61 @@
                         <span style="font-weight: bold; margin-left: 5px;">回复</span>
                     </div>
                     
-                    <!-- 展开回复行 -->
                     <div class="expand-replies" id="pReplyRow">
                         <div class="line"></div>
                         <span>展开<span id="pReplyCount">0</span>条回复</span>
-                        <span style="font-size: 10px; margin-left: 4px; transform: scale(1.2);">∨</span>
+                        <span style="font-size: 10px; margin-left: 4px;">∨</span>
                     </div>
                 </div>
 
-                <!-- 右：操作按钮 (横向排列) -->
                 <div class="action-box" id="pActionBox">
-                    <!-- 点赞组 -->
                     <div class="like-group">
                         <svg class="icon-heart" viewBox="0 0 24 24">
                             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                         </svg>
-                        <div class="like-count" id="pLikes">2.4w</div>
+                        <div class="like-count" id="pLikes">0</div>
                     </div>
-                    
-                    <!-- 破碎的心 (空心) -->
                     <svg class="broken-heart" viewBox="0 0 24 24">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35zm-1-14l2 3-2 3 2 3h-2l-2-3 2-3-2-3h2z"/>
                     </svg>
                 </div>
             </div>
         </div>
-        <p style="text-align: center; color: #bbb; font-size: 12px; margin-top: 20px;">参考实拍图 1:1 还原 | 请直接截图使用</p>
     </div>
 </div>
 
 <script>
-    // 切换模式
+    // 1. 头像库配置
+    const avatarList = [
+        "https://api.dicebear.com/7.x/avataaars/svg?seed=8",
+        "https://api.dicebear.com/7.x/avataaars/svg?seed=12",
+        "https://api.dicebear.com/7.x/avataaars/svg?seed=50",
+        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100",
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100",
+        "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100",
+        "https://api.dicebear.com/7.x/bottts/svg?seed=9",
+        "https://api.dicebear.com/7.x/pixel-art/svg?seed=22",
+        "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+        "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie"
+    ];
+
+    const grid = document.getElementById('avGrid');
+    const pAvatar = document.getElementById('pAvatar');
+
+    avatarList.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'avatar-item' + (i === 0 ? ' selected' : '');
+        img.onclick = function() {
+            document.querySelectorAll('.avatar-item').forEach(el => el.classList.remove('selected'));
+            this.classList.add('selected');
+            pAvatar.src = src;
+        };
+        grid.appendChild(img);
+    });
+    pAvatar.src = avatarList[0];
+
+    // 2. 模式与点赞
     function changeTheme(m) {
         const box = document.getElementById('previewBox');
         const btns = document.getElementById('themeGroup').children;
@@ -195,7 +209,6 @@
         }
     }
 
-    // 切换点赞状态
     function toggleLike(isLiked) {
         const actionBox = document.getElementById('pActionBox');
         const btns = document.getElementById('likeGroup').children;
@@ -208,7 +221,7 @@
         }
     }
 
-    // 实时同步文字
+    // 3. 实时同步
     function sync() {
         document.getElementById('pNick').innerText = document.getElementById('inNick').value;
         document.getElementById('pContent').innerText = document.getElementById('inContent').value;
